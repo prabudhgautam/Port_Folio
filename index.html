@@ -4,18 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prabudh Gautam | AMR & Robotics Engineer</title>
-    <!-- Technical Fonts: Space Grotesk, IBM Plex Sans, JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     
+    <!-- Three.js + STLLoader + URDFLoader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/urdf-loader@0.10.4/src/URDFLoader.js"></script>
+
     <style>
         :root {
             --bg-color: #080d1a;
             --card-bg: rgba(15, 23, 42, 0.8);
             --grid-color: rgba(56, 189, 248, 0.05);
             --grid-line: rgba(56, 189, 248, 0.15);
-            --primary: #ff5500; /* Safety Orange */
+            --primary: #ff5500;
             --primary-hover: #ff7733;
             --cyan-accent: #38bdf8;
             --text-main: #f1f5f9;
@@ -25,12 +30,7 @@
             --font-mono: 'JetBrains Mono', monospace;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            scroll-behavior: smooth;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
 
         body {
             background-color: var(--bg-color);
@@ -44,324 +44,87 @@
             padding-top: 70px;
         }
 
-        /* Header Navigation */
         header {
-            position: fixed;
-            top: 0;
-            width: 100%;
+            position: fixed; top: 0; width: 100%;
             background: rgba(8, 13, 26, 0.9);
             border-bottom: 1px solid var(--grid-line);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
+            backdrop-filter: blur(8px); z-index: 1000;
         }
 
         nav {
-            max-width: 1100px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            max-width: 1100px; margin: 0 auto;
+            display: flex; justify-content: space-between; align-items: center;
             padding: 1rem 2rem;
         }
 
-        .nav-logo {
-            font-family: var(--font-mono);
-            font-weight: 600;
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 1.1rem;
-        }
+        .nav-logo { font-family: var(--font-mono); font-weight: 600; color: var(--primary); text-decoration: none; }
+        .nav-links { display: flex; list-style: none; gap: 2rem; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-family: var(--font-mono); font-size: 0.9rem; }
 
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-
-        /* Hero Section */
         .hero {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 4rem 2rem;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            align-items: center;
-            min-height: calc(100vh - 70px);
+            max-width: 1100px; margin: 0 auto; padding: 4rem 2rem;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+            align-items: center; min-height: calc(100vh - 70px);
         }
 
-        .hero-text h1 {
-            font-family: var(--font-heading);
-            font-size: 2.8rem;
-            line-height: 1.2;
-            margin-bottom: 0.5rem;
-        }
+        .hero-text h1 { font-family: var(--font-heading); font-size: 2.8rem; line-height: 1.2; margin-bottom: 0.5rem; }
+        .hero-text .subtitle { font-family: var(--font-mono); color: var(--cyan-accent); font-size: 1.1rem; margin-bottom: 1.5rem; }
+        .hero-text p { color: var(--text-muted); margin-bottom: 2rem; }
 
-        .hero-text .subtitle {
-            font-family: var(--font-mono);
-            color: var(--cyan-accent);
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero-text p {
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-
+        .cta-buttons { display: flex; gap: 1rem; }
         .btn {
-            font-family: var(--font-mono);
-            padding: 0.75rem 1.5rem;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s;
+            font-family: var(--font-mono); padding: 0.75rem 1.5rem; border-radius: 4px;
+            text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: all 0.2s;
         }
+        .btn-primary { background-color: var(--primary); color: #fff; border: 1px solid var(--primary); }
+        .btn-outline { border: 1px solid var(--grid-line); color: var(--text-main); background: rgba(15, 23, 42, 0.5); }
 
-        .btn-primary {
-            background-color: var(--primary);
-            color: #fff;
-            border: 1px solid var(--primary);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .btn-outline {
+        /* URDF Interactive Viewport Container */
+        .urdf-container {
             border: 1px solid var(--grid-line);
-            color: var(--text-main);
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15, 23, 42, 0.6);
+            padding: 1rem; border-radius: 8px; position: relative;
         }
+        .urdf-label {
+            position: absolute; top: 12px; left: 12px;
+            font-family: var(--font-mono); font-size: 0.75rem;
+            color: var(--cyan-accent); text-transform: uppercase; z-index: 10;
+        }
+        #urdf-viewport { width: 100%; height: 350px; }
 
-        .btn-outline:hover {
-            border-color: var(--cyan-accent);
-            color: var(--cyan-accent);
-        }
-
-        /* Animated Blueprint Graphic */
-        .blueprint-container {
-            border: 1px solid var(--grid-line);
-            background: rgba(15, 23, 42, 0.4);
-            padding: 1.5rem;
-            border-radius: 8px;
-            position: relative;
-        }
-
-        .blueprint-label {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--cyan-accent);
-            text-transform: uppercase;
-        }
-
-        svg path, svg circle, svg rect, svg line {
-            stroke: var(--cyan-accent);
-            stroke-width: 1.5;
-            fill: none;
-        }
-
-        .draw-path {
-            stroke-dasharray: 1000;
-            stroke-dashoffset: 1000;
-            animation: draw 3.5s ease-in-out forwards;
-        }
-
-        @keyframes draw {
-            to { stroke-dashoffset: 0; }
-        }
-
-        /* General Sections */
-        section {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 4rem 2rem;
-            border-bottom: 1px dashed var(--grid-line);
-        }
-
-        h2 {
-            font-family: var(--font-heading);
-            font-size: 1.8rem;
-            color: var(--text-main);
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        h2::before {
-            content: "//";
-            color: var(--primary);
-            font-family: var(--font-mono);
-        }
-
-        /* Timeline & Experience */
-        .timeline-item {
-            border-left: 2px solid var(--primary);
-            padding-left: 1.5rem;
-            margin-bottom: 2rem;
-            position: relative;
-        }
-
-        .timeline-item::before {
-            content: "";
-            position: absolute;
-            left: -6px;
-            top: 0;
-            width: 10px;
-            height: 10px;
-            background: var(--primary);
-            border-radius: 50%;
-        }
-
-        .job-title {
-            font-family: var(--font-heading);
-            font-size: 1.2rem;
-        }
-
-        .job-date {
-            font-family: var(--font-mono);
-            color: var(--cyan-accent);
-            font-size: 0.85rem;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Technical Projects & Specs */
-        .project-card {
-            background: var(--card-bg);
-            border: 1px solid var(--grid-line);
-            padding: 1.5rem;
-            border-radius: 6px;
-            margin-bottom: 1.5rem;
-        }
-
-        .project-card h3 {
-            font-family: var(--font-heading);
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
+        section { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; border-bottom: 1px dashed var(--grid-line); }
+        h2 { font-family: var(--font-heading); font-size: 1.8rem; color: var(--text-main); margin-bottom: 2rem; }
+        h2::before { content: "// "; color: var(--primary); font-family: var(--font-mono); }
 
         .specs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            background: rgba(8, 13, 26, 0.6);
-            padding: 1rem;
-            border-radius: 4px;
-            margin: 1rem 0;
-            border: 1px solid var(--grid-line);
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem; background: rgba(8, 13, 26, 0.6); padding: 1rem;
+            border-radius: 4px; margin: 1rem 0; border: 1px solid var(--grid-line);
         }
+        .spec-item { font-family: var(--font-mono); font-size: 0.85rem; }
+        .spec-label { color: var(--text-muted); display: block; }
+        .spec-value { color: var(--cyan-accent); font-weight: 600; }
 
-        .spec-item {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-        }
-
-        .spec-label {
-            color: var(--text-muted);
-            display: block;
-        }
-
-        .spec-value {
-            color: var(--cyan-accent);
-            font-weight: 600;
-        }
-
-        /* Skills Layout */
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .skill-box {
-            background: var(--card-bg);
-            border: 1px solid var(--grid-line);
-            padding: 1.25rem;
-            border-radius: 6px;
-        }
-
-        .skill-box h4 {
-            font-family: var(--font-mono);
-            color: var(--primary);
-            margin-bottom: 0.75rem;
-            font-size: 0.95rem;
-        }
-
-        .skill-box ul {
-            list-style: none;
-        }
-
-        .skill-box li {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-bottom: 0.4rem;
-        }
-
-        /* Footer */
-        footer {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 2rem;
-            text-align: center;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        @media (max-width: 768px) {
-            .hero {
-                grid-template-columns: 1fr;
-                padding-top: 2rem;
-            }
-            .nav-links {
-                display: none;
-            }
-        }
+        footer { text-align: center; padding: 2rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); }
     </style>
 </head>
 <body>
 
-    <!-- Header Navigation -->
     <header>
         <nav>
             <a href="#" class="nav-logo">PG_AMR::DEV</a>
             <ul class="nav-links">
                 <li><a href="#about">01. About</a></li>
-                <li><a href="#experience">02. Experience</a></li>
-                <li><a href="#projects">03. Projects</a></li>
-                <li><a href="#skills">04. Skills</a></li>
-                <li><a href="#contact">05. Contact</a></li>
+                <li><a href="#projects">02. Projects</a></li>
+                <li><a href="#contact">03. Contact</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- Hero Section -->
     <main class="hero" id="about">
         <div class="hero-text">
             <h1>Prabudh Gautam</h1>
-            <div class="subtitle">Robotics & Autonomous Mobile Robot (AMR) Engineer</div>
+            <div class="subtitle">Robotics & Autonomous Mobile Robot Engineer</div>
             <p>Specializing in ROS 2 navigation pipelines, state estimation, differential drive kinematics, and embedded control systems.</p>
             <div class="cta-buttons">
                 <a href="https://github.com/prabudhgautam/Franky_AMR" target="_blank" class="btn btn-primary">Franky_AMR Repo</a>
@@ -369,124 +132,101 @@
             </div>
         </div>
         
-        <!-- Schematic Drawing Vector -->
-        <div class="blueprint-container">
-            <div class="blueprint-label">SCHEMATIC: FRANKY_AMR_CHASSIS</div>
-            <svg viewBox="0 0 400 300" width="100%" height="250">
-                <!-- Outer Chassis -->
-                <rect class="draw-path" x="80" y="50" width="240" height="200" rx="15" />
-                <!-- Left Wheel -->
-                <rect class="draw-path" x="50" y="80" width="25" height="60" rx="4" />
-                <!-- Right Wheel -->
-                <rect class="draw-path" x="325" y="80" width="25" height="60" rx="4" />
-                <!-- Caster Wheel -->
-                <circle class="draw-path" cx="200" cy="220" r="15" />
-                <!-- Center Axes & Sensor Frame -->
-                <line class="draw-path" x1="200" y1="50" x2="200" y2="250" stroke-dasharray="4" />
-                <line class="draw-path" x1="62" y1="110" x2="337" y2="110" stroke-dasharray="4" />
-                <circle class="draw-path" cx="200" cy="110" r="25" />
-                <!-- LiDAR Label Indicator -->
-                <line class="draw-path" x1="200" y1="85" x2="250" y2="40" />
-                <text x="255" y="40" fill="#38bdf8" font-family="JetBrains Mono" font-size="10">LiDAR_FRAME</text>
-            </svg>
+        <!-- URDF 3D Rendering Area -->
+        <div class="urdf-container">
+            <div class="urdf-label">GAZEBO URDF ASSEMBLY VIEWER</div>
+            <div id="urdf-viewport"></div>
         </div>
     </main>
 
-    <!-- Experience Section -->
-    <section id="experience">
-        <h2>Experience</h2>
-        <div class="timeline-item">
-            <div class="job-title">Robotics Engineering & AMR Development</div>
-            <div class="job-date">Present</div>
-            <p>Developing ROS 2 differential-drive navigation stacks, simulating sensor integration in Gazebo, and designing real-time hardware-in-the-loop control logic for mobile robotics.</p>
-        </div>
-    </section>
-
-    <!-- Projects Section -->
     <section id="projects">
-        <h2>Projects</h2>
-        <div class="project-card">
-            <h3>Franky_AMR</h3>
-            <p>An open-source Autonomous Mobile Robot system designed for SLAM mapping, dynamic path planning, and embedded differential drive control.</p>
-            
-            <!-- Technical Specs Block from Repository -->
-            <div class="specs-grid">
-                <div class="spec-item">
-                    <span class="spec-label">wheel_radius:</span>
-                    <span class="spec-value">0.033 m</span>
-                </div>
-                <div class="spec-item">
-                    <span class="spec-label">wheel_separation:</span>
-                    <span class="spec-value">0.170 m</span>
-                </div>
-                <div class="spec-item">
-                    <span class="spec-label">middleware:</span>
-                    <span class="spec-value">ROS 2 (Jazzy)</span>
-                </div>
-                <div class="spec-item">
-                    <span class="spec-label">simulation:</span>
-                    <span class="spec-value">Gazebo Sim</span>
-                </div>
-            </div>
-
-            <div class="cta-buttons">
-                <a href="https://github.com/prabudhgautam/Franky_AMR" target="_blank" class="btn btn-outline">Explore Source Code →</a>
-            </div>
+        <h2>Featured AMR Platform</h2>
+        <h3>Franky_AMR System Architecture</h3>
+        <div class="specs-grid">
+            <div class="spec-item"><span class="spec-label">wheel_radius:</span><span class="spec-value">0.033 m</span></div>
+            <div class="spec-item"><span class="spec-label">wheel_separation:</span><span class="spec-value">0.170 m</span></div>
+            <div class="spec-item"><span class="spec-label">middleware:</span><span class="spec-value">ROS 2 Humble</span></div>
+            <div class="spec-item"><span class="spec-label">simulator:</span><span class="spec-value">Gazebo Sim</span></div>
         </div>
     </section>
 
-    <!-- Skills Section -->
-    <section id="skills">
-        <h2>Technical Stack</h2>
-        <div class="skills-grid">
-            <div class="skill-box">
-                <h4>Robotics Frameworks</h4>
-                <ul>
-                    <li>ROS / ROS 2</li>
-                    <li>Nav2 & SLAM Toolbox</li>
-                    <li>Gazebo / RViz</li>
-                    <li>TF2 Transformations</li>
-                </ul>
-            </div>
-            <div class="skill-box">
-                <h4>Programming & Tools</h4>
-                <ul>
-                    <li>C++</li>
-                    <li>Python</li>
-                    <li>Linux / Bash Scripting</li>
-                    <li>Git / Version Control</li>
-                </ul>
-            </div>
-            <div class="skill-box">
-                <h4>Embedded & Hardware</h4>
-                <ul>
-                    <li>Microcontrollers (ESP32, Arduino)</li>
-                    <li>Motor Encoders & Drivers</li>
-                    <li>LiDAR Sensor Integration</li>
-                    <li>3D CAD Modeling</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact">
-        <h2>Contact</h2>
-        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Reach out for robotics engineering collaborations or technical discussions.</p>
-        <div class="cta-buttons">
-            <a href="https://www.linkedin.com/in/prabudh-gautam-7879a41ab/" target="_blank" class="btn btn-primary">LinkedIn Profile</a>
-            <a href="https://github.com/prabudhgautam" target="_blank" class="btn btn-outline">GitHub Profile</a>
-        </div>
-    </section>
-
-    <footer>
-        <p>// Built & Hosted Locally by Prabudh Gautam</p>
+    <footer id="contact">
+        <p>// Built by Prabudh Gautam</p>
     </footer>
 
-    <!-- Minimal JS for SVG animation reset and navigation -->
+    <!-- URDF Loader Script -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("Robotics Blueprint Portfolio Loaded.");
+        const container = document.getElementById('urdf-viewport');
+        const scene = new THREE.Scene();
+        
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 100);
+        camera.position.set(0.5, 0.5, 0.5);
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // Lighting
+        const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.5);
+        dirLight.position.set(2, 4, 2);
+        scene.add(dirLight);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+
+        let robotModel = null;
+
+        // Set up URDF Loader
+        const loader = new URDFLoader();
+        loader.packages = {
+            franky_amr: '.',
+            franky_amr_description: '.'
+        };
+
+        // Load URDF Assembly
+        loader.load('franky_amr.urdf', robot => {
+            robotModel = robot;
+            
+            // Apply safety orange color theme
+            robot.traverse(child => {
+                if (child.isMesh) {
+                    child.material = new THREE.MeshPhongMaterial({
+                        color: 0xff5500,
+                        specular: 0x111111,
+                        shininess: 30
+                    });
+                }
+            });
+
+            // Reorient ROS Z-up frame to Three.js Y-up frame
+            robot.rotation.x = -Math.PI / 2;
+            scene.add(robot);
+        }, 
+        undefined, 
+        error => {
+            console.error('URDF Loading Error:', error);
+        });
+
+        // Global animation loop running independently
+        function animate() {
+            requestAnimationFrame(animate);
+            if (robotModel) {
+                robotModel.rotation.z += 0.005;
+            }
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle Window Resizing
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
         });
     </script>
 </body>
