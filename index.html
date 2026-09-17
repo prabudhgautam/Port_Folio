@@ -8,11 +8,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     
-    <!-- Three.js + STLLoader + URDFLoader -->
+    <!-- Three.js + STLLoader + OrbitControls + URDFLoader (UMD Standalone Bundle) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/urdf-loader@0.10.4/src/URDFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/urdf-loader@0.10.4/URDFLoader.js"></script>
 
     <style>
         :root {
@@ -180,18 +180,24 @@
 
         let robotModel = null;
 
-        // Set up URDF Loader
+        // Instantiate URDFLoader (Using global UMD build)
         const loader = new URDFLoader();
+        
+        // Resolve subpath directory for relative asset resolution on GitHub Pages
+        const pathSegments = window.location.pathname.split('/');
+        pathSegments.pop();
+        const basePath = pathSegments.join('/') + '/';
+
         loader.packages = {
-            franky_amr: '.',
-            franky_amr_description: '.'
+            franky_amr: basePath,
+            franky_amr_description: basePath
         };
 
         // Load URDF Assembly
-        loader.load('franky_amr.urdf', robot => {
+        loader.load(basePath + 'franky_amr.urdf', robot => {
             robotModel = robot;
-            
-            // Apply safety orange color theme
+
+            // Apply orange color theme across loaded meshes
             robot.traverse(child => {
                 if (child.isMesh) {
                     child.material = new THREE.MeshPhongMaterial({
@@ -205,13 +211,19 @@
             // Reorient ROS Z-up frame to Three.js Y-up frame
             robot.rotation.x = -Math.PI / 2;
             scene.add(robot);
+
+            // Center orbit controls focus point on the robot model
+            const bbox = new THREE.Box3().setFromObject(robot);
+            const center = bbox.getCenter(new THREE.Vector3());
+            controls.target.copy(center);
+            controls.update();
         }, 
         undefined, 
         error => {
             console.error('URDF Loading Error:', error);
         });
 
-        // Global animation loop running independently
+        // Global animation loop running continuously
         function animate() {
             requestAnimationFrame(animate);
             if (robotModel) {
