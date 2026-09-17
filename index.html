@@ -8,12 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     
-    <!-- Three.js + STLLoader + OrbitControls + URDFLoader (UMD Standalone) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/urdf-loader@0.10.4/URDFLoader.js"></script>
-
     <style>
         :root {
             --bg-color: #080d1a;
@@ -311,8 +305,12 @@
         <p>// Built by Prabudh Gautam | ROS 2 & Robotics Engineering Portfolio</p>
     </footer>
 
-    <!-- URDF Loader Script -->
-    <script>
+    <!-- 3D URDF Loader Script -->
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js';
+        import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js';
+        import URDFLoader from 'https://cdn.jsdelivr.net/npm/urdf-loader@0.10.4/src/URDFLoader.js';
+
         const container = document.getElementById('urdf-viewport');
         const scene = new THREE.Scene();
         
@@ -324,7 +322,7 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
 
         // Lighting
