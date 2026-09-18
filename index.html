@@ -1,401 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prabudh Gautam | Robotics & AMR Engineer</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    
-    <!-- ES Module Import Map -->
-    <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js",
-        "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/",
-        "urdf-loader": "https://cdn.jsdelivr.net/npm/urdf-loader@0.10.4/src/URDFLoader.js"
-      }
-    }
-    </script>
-    
-    <style>
-        :root {
-            --bg-color: #080d1a;
-            --card-bg: rgba(15, 23, 42, 0.8);
-            --grid-color: rgba(56, 189, 248, 0.05);
-            --grid-line: rgba(56, 189, 248, 0.15);
-            --primary: #ff5500;
-            --primary-hover: #ff7733;
-            --cyan-accent: #38bdf8;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --font-heading: 'Space Grotesk', sans-serif;
-            --font-body: 'IBM Plex Sans', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
-
-        body {
-            background-color: var(--bg-color);
-            background-image: 
-                linear-gradient(var(--grid-color) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 30px 30px;
-            color: var(--text-main);
-            font-family: var(--font-body);
-            line-height: 1.6;
-            padding-top: 70px;
-        }
-
-        header {
-            position: fixed; top: 0; width: 100%;
-            background: rgba(8, 13, 26, 0.9);
-            border-bottom: 1px solid var(--grid-line);
-            backdrop-filter: blur(8px); z-index: 1000;
-        }
-
-        nav {
-            max-width: 1100px; margin: 0 auto;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 1rem 2rem;
-        }
-
-        .nav-logo { font-family: var(--font-mono); font-weight: 600; color: var(--primary); text-decoration: none; }
-        .nav-links { display: flex; list-style: none; gap: 2rem; }
-        .nav-links a { color: var(--text-muted); text-decoration: none; font-family: var(--font-mono); font-size: 0.9rem; }
-        .nav-links a:hover { color: var(--cyan-accent); }
-
-        .hero {
-            max-width: 1100px; margin: 0 auto; padding: 4rem 2rem;
-            display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;
-            align-items: center; min-height: calc(100vh - 70px);
-        }
-
-        .hero-text h1 { font-family: var(--font-heading); font-size: 2.8rem; line-height: 1.2; margin-bottom: 0.5rem; }
-        .hero-text .subtitle { font-family: var(--font-mono); color: var(--cyan-accent); font-size: 1.1rem; margin-bottom: 1.5rem; }
-        .hero-text p { color: var(--text-muted); margin-bottom: 2rem; }
-
-        .cta-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
-        .btn {
-            font-family: var(--font-mono); padding: 0.75rem 1.5rem; border-radius: 4px;
-            text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: all 0.2s;
-        }
-        .btn-primary { background-color: var(--primary); color: #fff; border: 1px solid var(--primary); }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-outline { border: 1px solid var(--grid-line); color: var(--text-main); background: rgba(15, 23, 42, 0.5); }
-        .btn-outline:hover { border-color: var(--cyan-accent); color: var(--cyan-accent); }
-
-        /* URDF Viewport Container */
-        .urdf-container {
-            border: 1px solid var(--grid-line);
-            background: rgba(15, 23, 42, 0.6);
-            padding: 1rem; border-radius: 8px; position: relative;
-            min-height: 350px;
-        }
-        .urdf-label {
-            position: absolute; top: 12px; left: 12px;
-            font-family: var(--font-mono); font-size: 0.75rem;
-            color: var(--cyan-accent); text-transform: uppercase; z-index: 10;
-        }
-        #urdf-viewport { width: 100%; height: 350px; display: block; }
-
-        section { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; border-bottom: 1px dashed var(--grid-line); }
-        h2 { font-family: var(--font-heading); font-size: 1.8rem; color: var(--text-main); margin-bottom: 2rem; }
-        h2::before { content: "// "; color: var(--primary); font-family: var(--font-mono); }
-
-        /* About & Profile Layout */
-        .about-grid { display: grid; grid-template-columns: 280px 1fr; gap: 2.5rem; align-items: start; }
-        .profile-img-container {
-            border: 1px solid var(--grid-line);
-            border-radius: 8px; overflow: hidden;
-            background: rgba(15, 23, 42, 0.4); text-align: center;
-        }
-        .profile-img-container img { width: 100%; height: auto; display: block; object-fit: cover; }
-
-        /* Skills Tags */
-        .skills-group { margin-bottom: 1.5rem; }
-        .skills-group h4 { font-family: var(--font-mono); color: var(--cyan-accent); font-size: 0.95rem; margin-bottom: 0.5rem; }
-        .tag-container { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-        .tag {
-            font-family: var(--font-mono); font-size: 0.8rem;
-            background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2);
-            color: var(--text-main); padding: 0.25rem 0.6rem; border-radius: 4px;
-        }
-
-        /* Experience Timeline */
-        .timeline-item {
-            border-left: 2px solid var(--primary); padding-left: 1.5rem; margin-bottom: 2rem; position: relative;
-        }
-        .timeline-item::before {
-            content: ''; position: absolute; left: -6px; top: 0;
-            width: 10px; height: 10px; border-radius: 50%; background: var(--primary);
-        }
-        .timeline-role { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; }
-        .timeline-company { font-family: var(--font-mono); color: var(--cyan-accent); font-size: 0.9rem; margin-bottom: 0.5rem; }
-        .timeline-date { font-family: var(--font-mono); color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.8rem; }
-        .timeline-item ul { list-style-type: square; margin-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem; }
-
-        /* Projects Grid */
-        .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
-        .project-card {
-            background: var(--card-bg); border: 1px solid var(--grid-line);
-            border-radius: 8px; padding: 1.5rem; transition: transform 0.2s, border-color 0.2s;
-        }
-        .project-card:hover { transform: translateY(-3px); border-color: var(--cyan-accent); }
-        .project-title { font-family: var(--font-heading); font-size: 1.2rem; color: var(--text-main); margin-bottom: 0.5rem; }
-        .project-tech { font-family: var(--font-mono); font-size: 0.8rem; color: var(--cyan-accent); margin-bottom: 1rem; }
-        .project-desc { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
-
-        .specs-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem; background: rgba(8, 13, 26, 0.6); padding: 1rem;
-            border-radius: 4px; margin: 1rem 0; border: 1px solid var(--grid-line);
-        }
-        .spec-item { font-family: var(--font-mono); font-size: 0.85rem; }
-        .spec-label { color: var(--text-muted); display: block; }
-        .spec-value { color: var(--cyan-accent); font-weight: 600; }
-
-        footer { text-align: center; padding: 2.5rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--grid-line); }
-
-        @media (max-width: 768px) {
-            .hero, .about-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prabudh Gautam | Autonomous Systems & Robotics Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js",
+    "three/examples/jsm/controls/OrbitControls.js": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js",
+    "three/examples/jsm/loaders/STLLoader.js": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/STLLoader.js",
+    "three/examples/jsm/loaders/ColladaLoader.js": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/ColladaLoader.js",
+    "three/examples/jsm/loaders/OBJLoader.js": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/OBJLoader.js",
+    "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/GLTFLoader.js",
+    "urdf-loader": "https://cdn.jsdelivr.net/npm/urdf-loader@0.10.4/src/URDFLoader.js"
+  }
+}
+</script>
+<style>
+:root{--bg:#080d1a;--card:rgba(15,23,42,.8);--grid:rgba(56,189,248,.05);--line:rgba(56,189,248,.15);--orange:#ff5500;--cyan:#38bdf8;--text:#f1f5f9;--muted:#94a3b8;--heading:'Space Grotesk',sans-serif;--body:'IBM Plex Sans',sans-serif;--mono:'JetBrains Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box;scroll-behavior:smooth}body{background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:30px 30px;color:var(--text);font-family:var(--body);line-height:1.6;padding-top:70px}header{position:fixed;top:0;width:100%;background:rgba(8,13,26,.9);border-bottom:1px solid var(--line);backdrop-filter:blur(8px);z-index:1000}nav{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;padding:1rem 2rem}.nav-logo{font-family:var(--mono);font-weight:600;color:var(--orange);text-decoration:none}.nav-links{display:flex;list-style:none;gap:2rem}.nav-links a{color:var(--muted);text-decoration:none;font-family:var(--mono);font-size:.9rem}.nav-links a:hover{color:var(--cyan)}.hero{max-width:1100px;margin:auto;padding:4rem 2rem;display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:center;min-height:calc(100vh - 70px)}h1,h2,h3,.timeline-role,.project-title{font-family:var(--heading)}.hero-text h1{font-size:2.8rem;line-height:1.2;margin-bottom:.5rem}.subtitle{font-family:var(--mono);color:var(--cyan);font-size:1.05rem;margin-bottom:1.5rem}.hero-text p,.project-desc,section p{color:var(--muted)}.hero-text p{margin-bottom:2rem}.cta-buttons{display:flex;gap:1rem;flex-wrap:wrap}.btn{font-family:var(--mono);padding:.75rem 1.5rem;border-radius:4px;text-decoration:none;font-weight:600;font-size:.9rem;transition:.2s}.btn-primary{background:var(--orange);color:#fff;border:1px solid var(--orange)}.btn-primary:hover{background:#ff7733}.btn-outline{border:1px solid var(--line);color:var(--text);background:rgba(15,23,42,.5)}.btn-outline:hover{border-color:var(--cyan);color:var(--cyan)}.urdf-container{border:1px solid var(--line);background:rgba(15,23,42,.6);padding:1rem;border-radius:8px;position:relative;min-height:350px}.urdf-label{position:absolute;top:12px;left:12px;font-family:var(--mono);font-size:.75rem;color:var(--cyan);text-transform:uppercase;z-index:10}#urdf-viewport{width:100%;height:350px;display:block}.urdf-status{position:absolute;bottom:12px;left:12px;right:12px;font:12px var(--mono);color:var(--muted);z-index:10}section{max-width:1100px;margin:auto;padding:4rem 2rem;border-bottom:1px dashed var(--line)}h2{font-size:1.8rem;margin-bottom:1.5rem}h2:before{content:'// ';color:var(--orange);font-family:var(--mono)}.timeline-item{border-left:2px solid var(--orange);padding-left:1.5rem;margin-bottom:2rem;position:relative}.timeline-item:before{content:'';position:absolute;left:-6px;top:0;width:10px;height:10px;border-radius:50%;background:var(--orange)}.timeline-role{font-size:1.2rem;font-weight:700}.timeline-company,.project-tech{font-family:var(--mono);color:var(--cyan);font-size:.9rem;margin-bottom:.5rem}.timeline-date{font-family:var(--mono);color:var(--muted);font-size:.8rem;margin-bottom:.8rem}.timeline-item ul{list-style-type:square;margin-left:1.2rem;color:var(--muted);font-size:.95rem}.projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}.project-card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:1.5rem;transition:.2s;text-decoration:none;display:block;color:inherit}.project-card:hover{transform:translateY(-3px);border-color:var(--cyan)}.project-card:hover .project-title{color:var(--cyan)}.project-title{font-size:1.2rem;margin-bottom:.5rem;transition:.2s}.project-tech{font-size:.8rem;margin-bottom:1rem}.project-desc{font-size:.9rem;margin-bottom:1rem}.specs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;background:rgba(8,13,26,.6);padding:1rem;border-radius:4px;margin:1.5rem 0;border:1px solid var(--line)}.spec-item{font-family:var(--mono);font-size:.85rem}.spec-label{color:var(--muted);display:block}.spec-value{color:var(--cyan);font-weight:600}.skills-group{margin-bottom:1.5rem}.skills-group h4{font-family:var(--mono);color:var(--cyan);font-size:.95rem;margin-bottom:.5rem}.tag-container{display:flex;flex-wrap:wrap;gap:.5rem}.tag{font-family:var(--mono);font-size:.8rem;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);padding:.25rem .6rem;border-radius:4px}.feature-block{background:var(--card);border:1px solid var(--line);padding:1.8rem;border-radius:8px;margin-bottom:1.5rem}.feature-block h3{color:var(--orange);margin-bottom:.75rem;font-size:1.15rem}.feature-block p{color:var(--muted);margin-bottom:1rem}.status-tag{display:inline-block;font-family:var(--mono);font-size:.75rem;padding:.2rem .5rem;border-radius:3px;background:rgba(255,85,0,.15);color:var(--orange);border:1px solid rgba(255,85,0,.3);margin-left:.5rem}footer{text-align:center;padding:2.5rem;font-family:var(--mono);font-size:.85rem;color:var(--muted);border-top:1px solid var(--line)}@media(max-width:768px){.hero{grid-template-columns:1fr}.nav-links{gap:.7rem}.nav-links a{font-size:.7rem}.hero-text h1{font-size:2.2rem}}
+</style>
 </head>
 <body>
-
     <header>
         <nav>
             <a href="#" class="nav-logo">PG_AMR::DEV</a>
             <ul class="nav-links">
-                <li><a href="#about">01. About</a></li>
-                <li><a href="#experience">02. Experience</a></li>
-                <li><a href="#projects">03. Projects</a></li>
-                <li><a href="#skills">04. Skills</a></li>
+                <li><a href="#flagship">01. Franky AMR</a></li>
+                <li><a href="#about">02. About</a></li>
+                <li><a href="#experiments">03. Engineering Labs</a></li>
+                <li><a href="#experience">04. Experience</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- Hero Section -->
-    <main class="hero" id="about">
+    <main class="hero">
         <div class="hero-text">
             <h1>Prabudh Gautam</h1>
-            <div class="subtitle">Robotics & Mobile Autonomous Systems Engineer</div>
-            <p>B.Tech ECE graduate specializing in ROS 2 navigation pipelines, state estimation, differential drive kinematics, Gazebo simulations, and embedded hardware control.</p>
+            <div class="subtitle">I build autonomous systems end-to-end, from physical kinematics to high-level control and simulation.</div>
+            <p>I like understanding how a robot goes from wheels + sensors &rarr; perception &rarr; localization &rarr; planning &rarr; actually moving through the world.</p>
             <div class="cta-buttons">
-                <a href="https://github.com/prabudhgautam/Franky_AMR" target="_blank" class="btn btn-primary">Franky_AMR Repo</a>
-                <a href="https://linkedin.com/in/prabudh-gautam-7879a41ab" target="_blank" class="btn btn-outline">LinkedIn</a>
-                <a href="mailto:prabudhrocky2003@gmail.com" class="btn btn-outline">Contact Me</a>
-            </div>
-        </div>
+                <a href="https://github.com/prabudhgautam/Franky_AMR" target="_blank" rel="noopener" class="btn btn-primary">Franky_AMR Code</a>
+                <a href="https://linkedin.com/in/prabudh-gautam-7879a41ab" target="_blank" rel="noopener" class="btn btn-outline">LinkedIn</a> 
+                <a href="mailto:prabudhrocky2003@gmail.com" class="btn btn-outline">Contact Me</a> 
+            </div> 
+        </div> 
+
+        <div class="urdf-container"> 
+            <div class="urdf-label">GAZEBO URDF ASSEMBLY VIEWER</div> 
+            <div id="urdf-viewport"></div> 
+            <div id="urdf-status" class="urdf-status">Loading Franky AMR...</div> 
+        </div> 
+    </main> 
+
+    <!-- FLAGSHIP PROJECT CASE STUDY -->
+    <section id="flagship"> 
+        <h2>Primary Project: Franky AMR</h2> 
         
-        <!-- URDF 3D Rendering Area -->
-        <div class="urdf-container">
-            <div class="urdf-label">GAZEBO URDF ASSEMBLY VIEWER</div>
-            <div id="urdf-viewport"></div>
-        </div>
-    </main>
-
-    <!-- About & Education Section -->
-    <section>
-        <h2>About & Education</h2>
-        <div class="about-grid">
-            <div class="profile-img-container">
-                <img src="bg_rem.png" alt="Prabudh Gautam">
-            </div>
-            <div>
-                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
-                    Robotics Engineer based in Noida, Uttar Pradesh, India[cite: 1]. Hands-on experience developing autonomous navigation stacks, programming embedded microcontrollers, and debugging hardware-software interfaces[cite: 1]. Dedicated to building robust differential-drive autonomous mobile robots (AMRs) and educating future engineers[cite: 1].
-                </p>
-                <div style="background: var(--card-bg); border: 1px solid var(--grid-line); padding: 1.2rem; border-radius: 6px;">
-                    <h3 style="font-family: var(--font-heading); color: var(--cyan-accent); font-size: 1.1rem; margin-bottom: 0.3rem;">Bachelor of Technology (B.Tech)</h3>
-                    <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-main);">Electronics and Communication Engineering</div>
-                    <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem;">Galgotias College of Engineering and Technology (GCET) | 2021 – 2025[cite: 1]</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Experience Section -->
-    <section id="experience">
-        <h2>Work Experience</h2>
-        
-        <div class="timeline-item">
-            <div class="timeline-role">Robotics Trainer</div>
-            <div class="timeline-company">Cograd / Atal Tinkering Labs | Uttar Pradesh, India</div>
-            <div class="timeline-date">Nov 2025 – Mar 2026</div>
-            <ul>
-                <li>Delivered hands-on robotics training across 3 Jawahar Navodaya Vidyalaya ATL labs covering electronics, sensors, Arduino/C++, and system debugging[cite: 1].</li>
-                <li>Built line-following robots, obstacle-avoidance robots, gesture-controlled robotic arms, IoT systems, and sensor-based prototypes[cite: 1].</li>
-                <li>Diagnosed hardware, wiring, actuator, firmware, and integration issues through systematic testing[cite: 1].</li>
-            </ul>
-        </div>
-
-        <div class="timeline-item">
-            <div class="timeline-role">AI/ML Intern</div>
-            <div class="timeline-company">Zippi.ai</div>
-            <div class="timeline-date">Jul 2024 – Sep 2024</div>
-            <ul>
-                <li>Worked with Python-based machine learning and data-processing workflows involving data handling and AI experimentation[cite: 1].</li>
-            </ul>
-        </div>
-    </section>
-
-    <!-- Featured Projects Section -->
-    <section id="projects">
-        <h2>Selected Robotics Projects</h2>
-        
-        <!-- Main Highlight Project -->
-        <h3 style="font-family: var(--font-heading); margin-bottom: 0.5rem;">Franky AMR (Featured Platform)</h3>
-        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">
-            Differential-drive mobile robot built in ROS 2 and Gazebo with URDF/Xacro modeling, ros2_control, wheel velocity control, TF2, and RViz visualization[cite: 1]. Integrated teleoperation, odometry, SLAM, and Nav2 workflows for autonomous mapping and navigation[cite: 1].
+        <p style="font-size: 1.05rem; color: var(--text); margin-bottom: 1rem;">
+            I built Franky as a way to understand mobile robotics from the physical robot model all the way to autonomous navigation.
         </p>
-        <div class="specs-grid">
-            <div class="spec-item"><span class="spec-label">wheel_radius:</span><span class="spec-value">0.033 m</span></div>
-            <div class="spec-item"><span class="spec-label">wheel_separation:</span><span class="spec-value">0.170 m</span></div>
-            <div class="spec-item"><span class="spec-label">middleware:</span><span class="spec-value">ROS 2 Jazzy</span></div>
-            <div class="spec-item"><span class="spec-label">simulator:</span><span class="spec-value">Gazebo Sim</span></div>
+        
+        <p>
+            I started with the differential-drive kinematics and URDF model, then worked through wheel velocity control, odometry, TF2 transform trees, and RViz visualization in ROS 2. The interesting part wasn't just getting the robot to move—it was figuring out why frames, odometry, controllers, and sensors weren't behaving as expected, and learning to debug each layer of the stack independently.
+        </p>
+
+        <div class="specs-grid"> 
+            <div class="spec-item"><span class="spec-label">ROS VERSION:</span><span class="spec-value">ROS 2 Jazzy</span></div> 
+            <div class="spec-item"><span class="spec-label">SIMULATOR:</span><span class="spec-value">Gazebo Sim</span></div> 
+            <div class="spec-item"><span class="spec-label">CONTROL:</span><span class="spec-value">ros2_control</span></div> 
+            <div class="spec-item"><span class="spec-label">TRANSFORMS:</span><span class="spec-value">TF2 Tree</span></div> 
+            <div class="spec-item"><span class="spec-label">DIMENSIONS:</span><span class="spec-value">r=0.033m | b=0.170m</span></div>
+        </div> 
+
+        <div class="feature-block">
+            <h3>Current Implementation Status</h3>
+            <p>
+                The platform currently supports teleoperation, odometry broadcasting, TF2 frame transforms, and simulation-based navigation workflows. Ray-cast 2D LiDAR sensors and wheel encoders feed the control loop, with active extension underway toward full SLAM mapping and Nav2 autonomous path planning <span class="status-tag">In Active Development</span>.
+            </p>
         </div>
 
-        <div class="projects-grid" style="margin-top: 2rem;">
-            <div class="project-card">
-                <div class="project-title">PID Velocity Simulator</div>
-                <div class="project-tech">Python | NumPy | Matplotlib | Control Theory</div>
-                <div class="project-desc">Python simulation of motor velocity response and closed-loop PID control, implementing discrete-time P, I, and D terms to analyze system response and tracking error[cite: 1].</div>
-            </div>
+        <div class="feature-block">
+            <h3>Lessons Learned & Solved Bugs</h3>
+            <ul style="margin-left: 1.2rem; color: var(--muted);">
+                <li style="margin-bottom: .5rem;"><strong>Mesh Origin vs. TF Calibration:</strong> Solved visual mesh misalignments by re-calculating geometry relative to CAD origins rather than guessing visual rotations.</li>
+                <li style="margin-bottom: .5rem;"><strong>Friction & Controller Tuning:</strong> Adjusted surface friction and command rates inside Gazebo physics tags to keep wheel encoders aligned with odometry calculations during sharp turns.</li>
+            </ul>
+        </div>
+    </section> 
 
-            <div class="project-card">
-                <div class="project-title">Self-Balancing Robot</div>
-                <div class="project-tech">Arduino / ESP32 | IMU | PID Control | Motors</div>
-                <div class="project-desc">Two-wheeled self-balancing robot utilizing IMU sensor feedback, real-time PID control loops, motor driver actuation, and hardware response tuning[cite: 1].</div>
-            </div>
+    <!-- ABOUT SECTION -->
+    <section id="about"> 
+        <h2>About Me</h2> 
+        <div style="max-width: 850px;">
+            <p style="margin-bottom: 1.2rem; font-size: 1rem;">
+                I'm an ECE graduate building my way into robotics engineering through hands-on projects.
+            </p>
+            <p style="margin-bottom: 1.2rem;">
+                Right now, most of my attention is on mobile robotics—particularly ROS 2, differential-drive robots, SLAM, and autonomous navigation. Franky AMR is my main project, where I'm using simulation to understand the entire stack deeply rather than treating ROS as a collection of commands to memorize.
+            </p>
+            <p style="margin-bottom: 1.2rem;">
+                Before this, I spent several months working with students on embedded and robotics projects, which gave me a lot of experience debugging the messy part of engineering: wiring, sensors, firmware, actuators, and the inevitable "why isn't this working?" moments.
+            </p>
+            <p>
+                I'm interested in working on real autonomous robots, particularly systems where perception, localization, planning, and control come together on physical machines.
+            </p>
 
-            <div class="project-card">
-                <div class="project-title">FITORBIS Fitness Alarm System</div>
-                <div class="project-tech">Python | OpenCV | MediaPipe | Raspberry Pi</div>
-                <div class="project-desc">Computer-vision monitoring system powered by MediaPipe pose estimation and OpenCV to detect physical exercise movements and count repetitions[cite: 1].</div>
+            <div style="background: var(--card); border: 1px solid var(--line); padding: 1.2rem; border-radius: 6px; margin-top: 1.8rem;"> 
+                <h3 style="color: var(--cyan); font-size: 1.05rem; margin-bottom: .3rem;">Bachelor of Technology (B.Tech) — ECE</h3> 
+                <div style="font-family: var(--mono); font-size: .85rem; color: var(--muted);">Galgotias College of Engineering and Technology (GCET) | 2021 – 2025</div> 
             </div>
         </div>
     </section>
 
-    <!-- Skills Section -->
-    <section id="skills">
-        <h2>Technical Stack</h2>
-        
-        <div class="skills-group">
-            <h4>Robotics & Autonomous Navigation</h4>
-            <div class="tag-container">
-                <span class="tag">ROS 2</span><span class="tag">Gazebo</span><span class="tag">RViz</span>
-                <span class="tag">URDF / Xacro</span><span class="tag">ros2_control</span><span class="tag">TF2</span>
-                <span class="tag">Differential Drive</span><span class="tag">SLAM</span><span class="tag">Nav2</span>
-                <span class="tag">Odometry</span><span class="tag">PID Control</span>
-            </div>
-        </div>
+    <!-- ENGINEERING LABS & EXPERIMENTS -->
+    <section id="experiments"> 
+        <h2>Engineering Labs & Experiments</h2> 
 
-        <div class="skills-group">
-            <h4>Languages & Embedded Software</h4>
-            <div class="tag-container">
-                <span class="tag">Python</span><span class="tag">C++</span><span class="tag">Arduino / C++</span>
-                <span class="tag">NumPy</span><span class="tag">OpenCV</span><span class="tag">MediaPipe</span>
-            </div>
-        </div>
+        <div class="projects-grid"> 
+            <a href="https://github.com/prabudhgautam/PID_Simulator" target="_blank" rel="noopener" class="project-card"> 
+                <div class="project-title">Discrete PID Velocity Simulator &rarr;</div> 
+                <div class="project-tech">Python | Control Theory | Matplotlib</div> 
+                <div class="project-desc">Simulates motor velocity response using discrete-time P, I, and D calculations. Used to analyze step response characteristics, anti-windup algorithms, and setpoint tracking prior to hardware deployment.</div> 
+            </a> 
 
-        <div class="skills-group">
-            <h4>Hardware & Tools</h4>
-            <div class="tag-container">
-                <span class="tag">Arduino</span><span class="tag">ESP32 / ESP8266</span><span class="tag">Raspberry Pi</span>
-                <span class="tag">IMU Sensors</span><span class="tag">Linux / Ubuntu</span><span class="tag">Git & GitHub</span>
-                <span class="tag">CMake</span><span class="tag">Colcon</span>
-            </div>
-        </div>
-    </section>
+            <a href="https://github.com/prabudhgautam/Fitorbis" target="_blank" rel="noopener" class="project-card"> 
+                <div class="project-title">FITORBIS Vision Tracking &rarr;</div> 
+                <div class="project-tech">Python | OpenCV | MediaPipe</div> 
+                <div class="project-desc">Computer-vision monitoring pipeline leveraging MediaPipe pose estimation to detect physical exercise movements and calculate rep counts in real time.</div> 
+            </a> 
+        </div> 
+    </section> 
 
-    <footer>
-        <p>// Built by Prabudh Gautam | ROS 2 & Robotics Engineering Portfolio</p>
-    </footer>
+    <!-- EXPERIENCE -->
+    <section id="experience"> 
+        <h2>Experience</h2> 
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-        import URDFLoader from 'urdf-loader';
+        <div class="timeline-item"> 
+            <div class="timeline-role">Robotics Trainer</div> 
+            <div class="timeline-company">Cograd / Atal Tinkering Labs | MNNIT Allahabad Certified</div> 
+            <div class="timeline-date">Nov 2025 – Mar 2026</div> 
+            <ul> 
+                <li>Taught 1000+ students on embedded systems as an MNNIT Allahabad certified Technical Trainer.</li>
+                <li>Delivered hands-on robotics training across 3 Jawahar Navodaya Vidyalaya ATL labs covering electronics, sensors, Arduino/C++, robotics, and system debugging.</li> 
+                <li>Built and supported line-following robots, obstacle-avoidance robots, gesture-controlled robotic arms, IoT systems, and sensor-based prototypes.</li> 
+                <li>Diagnosed hardware, wiring, sensor, actuator, firmware, and integration issues through systematic testing and troubleshooting.</li> 
+                <li>Guided students through robot assembly, programming, testing, debugging, and development of functional prototypes for science exhibitions.</li>
+            </ul> 
+        </div> 
 
-        const container = document.getElementById('urdf-viewport');
-        const scene = new THREE.Scene();
-        
-        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 100);
-        camera.position.set(0.4, 0.4, 0.4);
+        <div class="timeline-item"> 
+            <div class="timeline-role">AI/ML Intern</div> 
+            <div class="timeline-company">Zippi.ai</div> 
+            <div class="timeline-date">Jul 2024 – Sep 2024</div> 
+            <ul> 
+                <li>Worked with Python-based machine learning and data-processing workflows involving data handling and AI experimentation.</li> 
+            </ul> 
+        </div> 
+    </section> 
 
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
+    <footer> 
+        <p>// Built by Prabudh Gautam | ROS 2 & Mobile Robotics</p> 
+    </footer> 
 
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
+    <!-- 3D URDF Loader Script --> 
+    <script type="module"> 
+        import * as THREE from 'three'; 
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'; 
+        import URDFLoader from 'urdf-loader'; 
 
-        // Lighting
-        const dirLight1 = new THREE.DirectionalLight(0x38bdf8, 1.5);
-        dirLight1.position.set(2, 4, 2);
-        scene.add(dirLight1);
+        const container = document.getElementById('urdf-viewport'); 
+        const status = document.getElementById('urdf-status'); 
+        const scene = new THREE.Scene(); 
 
-        const dirLight2 = new THREE.DirectionalLight(0xff5500, 0.8);
-        dirLight2.position.set(-2, -2, -2);
-        scene.add(dirLight2);
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.001, 100); 
+        camera.position.set(0.4, 0.3, 0.4); 
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-        scene.add(ambientLight);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); 
+        renderer.setSize(container.clientWidth, container.clientHeight); 
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+        container.appendChild(renderer.domElement); 
 
-        let robotModel = null;
+        const controls = new OrbitControls(camera, renderer.domElement); 
+        controls.enableDamping = true; 
+        controls.enableZoom = true; 
+        controls.zoomSpeed = 0.8; 
+        controls.enablePan = true; 
 
-        const loader = new URDFLoader();
-        loader.packages = {
-            franky_amr: './',
-            franky_amr_description: './'
-        };
+        const light1 = new THREE.DirectionalLight(0x38bdf8, 1.5); 
+        light1.position.set(2, 4, 2); 
+        scene.add(light1); 
 
-        loader.load('./franky_amr.urdf', robot => {
-            robotModel = robot;
+        const light2 = new THREE.DirectionalLight(0xff5500, 0.8); 
+        light2.position.set(-2, -2, -2); 
+        scene.add(light2); 
 
-            robot.traverse(child => {
-                if (child.isMesh) {
-                    child.material = new THREE.MeshPhongMaterial({
-                        color: 0xff5500,
-                        specular: 0x222222,
-                        shininess: 40
-                    });
-                }
-            });
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7)); 
 
-            robot.rotation.x = -Math.PI / 2;
-            scene.add(robot);
+        let robotModel = null; 
+        const loader = new URDFLoader(); 
+        loader.packages = { 
+            franky_amr: './', 
+            franky_amr_description: './' 
+        }; 
 
-            const bbox = new THREE.Box3().setFromObject(robot);
-            const center = bbox.getCenter(new THREE.Vector3());
-            controls.target.copy(center);
-            controls.update();
-        }, 
-        undefined, 
-        error => {
-            console.error('URDF Loading Error:', error);
-        });
+        loader.load('./franky_amr.urdf', robot => { 
+            robotModel = robot; 
 
-        function animate() {
-            requestAnimationFrame(animate);
-            if (robotModel) {
-                robotModel.rotation.z += 0.005;
-            }
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        animate();
+            robot.traverse(child => { 
+                if (child.isMesh) { 
+                    child.material = new THREE.MeshPhongMaterial({ 
+                        color: 0xff5500, 
+                        specular: 0x222222, 
+                        shininess: 40 
+                    }); 
 
-        window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        });
-    </script>
-</body>
+                    if (child.geometry) { 
+                        child.geometry.computeBoundingBox(); 
+                        const size = child.geometry.boundingBox.getSize(new THREE.Vector3()); 
+                        if (size.length() > 1.0) { 
+                            child.geometry.scale(0.001, 0.001, 0.001); 
+                        } 
+                    } 
+                } 
+            }); 
+
+            robot.rotation.set(-Math.PI / 2, 0, 0); 
+            scene.add(robot); 
+
+            requestAnimationFrame(() => { 
+                const box = new THREE.Box3().setFromObject(robot); 
+                const center = box.getCenter(new THREE.Vector3()); 
+                const size = box.getSize(new THREE.Vector3()); 
+
+                controls.target.copy(center); 
+
+                const maxSize = Math.max(size.x, size.y, size.z) || 0.3; 
+                const fitDistance = maxSize * 2.5; 
+
+                camera.position.set( 
+                    center.x + fitDistance, 
+                    center.y + fitDistance * 0.8, 
+                    center.z + fitDistance 
+                ); 
+                 
+                camera.near = maxSize / 100; 
+                camera.far = maxSize * 100; 
+                camera.updateProjectionMatrix(); 
+
+                controls.minDistance = maxSize * 0.2; 
+                controls.maxDistance = maxSize * 20; 
+                controls.update(); 
+
+                status.textContent = 'Franky AMR loaded'; 
+            }); 
+
+        }, undefined, error => { 
+            console.error('URDF Loading Error:', error); 
+            status.textContent = 'URDF failed to load — check console and file paths'; 
+        }); 
+
+        function animate() { 
+            requestAnimationFrame(animate); 
+            if (robotModel) { 
+                robotModel.rotation.y += 0.004; 
+            } 
+            controls.update(); 
+            renderer.render(scene, camera); 
+        } 
+
+        animate(); 
+
+        window.addEventListener('resize', () => { 
+            camera.aspect = container.clientWidth / container.clientHeight; 
+            camera.updateProjectionMatrix(); 
+            renderer.setSize(container.clientWidth, container.clientHeight); 
+        }); 
+    </script> 
+</body> 
 </html>
