@@ -205,7 +205,8 @@
         const loader = new URDFLoader(); 
         loader.packages = { 
             franky_amr: './', 
-            franky_amr_description: './' 
+            franky_amr_description: './',
+            '': './' 
         }; 
 
         loader.load('./franky_amr.urdf', robot => { 
@@ -213,11 +214,13 @@
 
             robot.traverse(child => { 
                 if (child.isMesh) { 
-                    child.material = new THREE.MeshPhongMaterial({ 
-                        color: 0xff5500, 
-                        specular: 0x222222, 
-                        shininess: 40 
-                    }); 
+                    if (!child.material || !child.material.map) {
+                        child.material = new THREE.MeshPhongMaterial({ 
+                            color: 0x38bdf8,
+                            specular: 0x222222,
+                            shininess: 40
+                        });
+                    }
 
                     if (child.geometry) { 
                         child.geometry.computeBoundingBox(); 
